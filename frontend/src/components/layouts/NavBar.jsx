@@ -10,22 +10,45 @@ function NavBar() {
 
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1 font-bold gap-2">
-            <li><a href="#" className="rounded-full hover:bg-primary hover:text-white transition-all">Home</a></li>
-            {/* Added href="#about" to link to the section below */}
-            <li><a href="#about" className="rounded-full hover:bg-primary hover:text-white transition-all">About</a></li>
-            <li><a href="#contact" className="rounded-full hover:bg-primary hover:text-white transition-all">Contact</a></li>
+            <li>
+              <a
+                href="#"
+                className="rounded-full hover:bg-primary hover:text-white transition-all"
+              >
+                Home
+              </a>
+            </li>
+            <li>
+              <a
+                href="#about"
+                className="rounded-full hover:bg-primary hover:text-white transition-all"
+              >
+                About
+              </a>
+            </li>
+            <li>
+              <a
+                href="#contact"
+                className="rounded-full hover:bg-primary hover:text-white transition-all"
+              >
+                Contact
+              </a>
+            </li>
           </ul>
         </div>
 
         <div className="navbar-end gap-2">
-          <button 
-            onClick={() => document.getElementById('login_modal').showModal()}
+          <button
+            onClick={() => document.getElementById("login_modal").showModal()}
             className="btn btn-ghost btn-sm hidden sm:inline-flex rounded-full px-6 font-bold cursor-pointer"
           >
             Login
           </button>
-          
-          <button className="btn btn-primary btn-sm rounded-full px-8 shadow-md hover:shadow-lg transition-all cursor-pointer">
+
+          <button
+            onClick={() => document.getElementById("signup_modal").showModal()}
+            className="btn btn-primary btn-sm rounded-full px-8 shadow-md hover:shadow-lg transition-all cursor-pointer"
+          >
             Signup
           </button>
         </div>

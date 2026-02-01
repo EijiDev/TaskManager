@@ -1,11 +1,9 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useState } from "react";
 
-function Login() {
-  const navigate = useNavigate();
-
+function SignUp() {
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
   });
@@ -17,26 +15,22 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLogIn = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const response = await axios.post("/api/auth/login", {
+      const response = await axios.post("/api/auth/signup", {
+        name: formData.name,
         email: formData.email,
         password: formData.password,
       });
 
-      console.log("Login Successful", response.data);
-
-      // Store access token
-      localStorage.setItem("accessToken", response.data.accessToken);
-
-      navigate("/dashboard");
+      console.log("Signup Successfull", response.data);
     } catch (error) {
       if (error.response) {
-        setError(error.response.data.message || "Login Failed");
+        setError(error.response.data.message || "Signup Failed");
       } else {
         setError("Network Error");
       }
@@ -46,7 +40,7 @@ function Login() {
   };
 
   return (
-    <dialog id="login_modal" className="modal">
+    <dialog id="signup_modal" className="modal">
       <div className="modal-box p-10 rounded-[1.2rem] bg-base-100 shadow-2xl max-w-sm">
         <div className="text-center mb-10">
           <h3 className="text-2xl font-black uppercase tracking-tight">
@@ -54,7 +48,18 @@ function Login() {
           </h3>
         </div>
 
-        <form onSubmit={handleLogIn} className="space-y-6">
+        <form onSubmit={handleSignup} className="space-y-6">
+          <div className="form-control">
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="NAME"
+              className="input bg-base-200 rounded-l border-none focus:ring-2 focus:ring-primary/20 text-sm font-bold placeholder:opacity-40"
+            />
+          </div>
+
           <div className="form-control">
             <input
               type="email"
@@ -62,7 +67,7 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               placeholder="EMAIL"
-              className="input bg-base-200 rounded-l border-none focus:ring-2 focus:ring-primary/20 text-sm font-bold placeholder:opacity-40"
+              className="input w-full bg-base-200 rounded-lg border-none focus:ring-2 focus:ring-primary/20 text-sm font-bold placeholder:opacity-40"
             />
           </div>
 
@@ -86,7 +91,7 @@ function Login() {
             disabled={loading}
             className="btn btn-primary w-full rounded-l uppercase font-black tracking-widest text-xs disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
 
@@ -94,8 +99,8 @@ function Login() {
           <button
             type="button"
             onClick={() => {
-              document.getElementById("login_modal")?.close();
-              document.getElementById("signup_modal")?.showModal();
+              document.getElementById("signup_modal")?.close();
+              document.getElementById("login_modal")?.showModal();
             }}
             className="text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity"
           >
@@ -114,4 +119,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default SignUp;

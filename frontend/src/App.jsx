@@ -4,7 +4,8 @@ import Hero from "./page/Hero.jsx";
 import About from "./page/About.jsx";
 import Footer from "./components/layouts/Footer.jsx";
 import Login from "./page/Login.jsx";
-import Dashboard from "./page/Dashboard.jsx";
+import SignUp from "./page/Signup.jsx";
+import UserDashboard from "./page/UserDashboard.jsx";
 
 function HomePage() {
   return (
@@ -13,8 +14,10 @@ function HomePage() {
       <Hero />
       <About />
       <Footer />
+      
       <Login />
-    </div>
+      <SignUp />
+    </div>  
   );
 }
 
@@ -22,7 +25,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<UserDashboard />} />
     </Routes>
   );
 }
