@@ -49,7 +49,7 @@ export const getUsersById = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        const user = await Users.getUsersById(userId);
+        const user = await Users.findUserById(userId);
 
         if(!user) {
             return res.status(404).json({ message: "User not found"});
@@ -77,7 +77,7 @@ export const updateUsers = async (req, res) => {
       return res.status(400).json({ message: "Password Required" });
     }
 
-    const user = await Users.getUsersById(userId);
+    const user = await Users.findUserById(userId);
 
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
@@ -102,7 +102,7 @@ export const deleteUsers = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await Users.getUsersById(userId);
+    const user = await Users.findUserById(userId);
 
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });

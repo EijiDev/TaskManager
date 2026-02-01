@@ -26,7 +26,7 @@ function NavBar() {
           </button>
           
           <button className="btn btn-primary btn-sm rounded-full px-8 shadow-md hover:shadow-lg transition-all cursor-pointer">
-            Join
+            Signup
           </button>
         </div>
       </div>

@@ -1,23 +1,29 @@
+import { Routes, Route } from "react-router-dom";
 import NavBar from "./components/layouts/NavBar.jsx";
 import Hero from "./page/Hero.jsx";
 import About from "./page/About.jsx";
 import Footer from "./components/layouts/Footer.jsx";
 import Login from "./page/Login.jsx";
+import Dashboard from "./page/Dashboard.jsx";
 
-function App() {
+function HomePage() {
   return (
     <div className="relative w-full overflow-hidden">
-      {/* The NavBar sits on top of the Hero */}
       <NavBar />
-      
-      {/* Main Sections */}
       <Hero />
       <About />
       <Footer />
-
-      {/* The Login Modal (Hidden by default, triggered by NavBar) */}
       <Login />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+    </Routes>
   );
 }
 

@@ -16,7 +16,7 @@ function Hero() {
                 Get Started
               </button>
               <button className="btn btn-xs sm:btn-sm md:btn-md btn-ghost border-current cursor-pointer hover:bg-primary-focus">
-                Learn More
+                Create Account
               </button>
             </div>
           </div>
@@ -38,7 +38,7 @@ function Hero() {
                 Get Started
               </button>
               <button className="btn btn-xs sm:btn-sm md:btn-md btn-outline cursor-pointer">
-                Learn More
+                Create Account
               </button>
             </div>
           </div>
