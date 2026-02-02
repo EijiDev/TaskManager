@@ -96,7 +96,7 @@ export const getCurrentUser = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
     
-    const user = await Users.findById(userId);
+    const user = await Users.findUserById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

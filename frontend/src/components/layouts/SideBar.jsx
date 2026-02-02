@@ -21,23 +21,25 @@ const FilterItem = ({ icon: Icon, label, active }) => (
     <Icon
       size={18}
       strokeWidth={1.8}
-      className={`flex-shrink-0 ${active ? "text-white" : "text-base-content/40"}`}
+      className={`shrink-0 ${active ? "text-white" : "text-base-content/40"}`}
     />
     <span className="text-[14px] font-semibold tracking-tight">{label}</span>
   </button>
 );
 
 function SideBar() {
-  const [darkMode, setDarkMode] = useState(false);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const displayCurrentUser = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        if (!token) throw new Error("No access token found");
+        if (!token) {
+          throw new Error("No Access Token Found");
+        }
 
         const response = await axios.get("/api/users/me", {
           headers: {
@@ -48,8 +50,14 @@ function SideBar() {
         setUser(response.data);
         setError("");
       } catch (error) {
-        console.error("Failed to fetch current user:", error);
-        setError("Failed to fetch user data");
+        if (error.response?.status === 401) {
+          localStorage.removeItem("accessToken");
+          setError("Session expired. Please log in again.");
+        } else {
+          setError(
+            error.response?.data?.message || "Failed to fetch user data",
+          );
+        }
       } finally {
         setLoading(false);
       }
@@ -58,6 +66,15 @@ function SideBar() {
     displayCurrentUser();
   }, []);
 
+  const getUserInitials = () => {
+    if (!user?.name) return "U";
+
+    const names = user.name.trim().split(" ");
+    const firstInitial = names[0][0];
+    const secondInitial = names[1]?.[0] || names[0][1] || "";
+
+    return (firstInitial + secondInitial).toUpperCase();
+  };
   return (
     <div className="h-full bg-base-200 p-3 sm:p-4 md:p-6">
       <div className="w-full max-w-80 mx-auto rounded-2xl overflow-hidden border border-base-300 shadow-2xl bg-base-300/50">
@@ -115,7 +132,7 @@ function SideBar() {
                 <Sun
                   size={17}
                   strokeWidth={1.8}
-                  className="text-base-content/40 sm:w-[18px] sm:h-[18px]"
+                  className="text-base-content/40 sm:w-4.5 sm:h-4.5"
                 />
                 <span className="text-[13px] sm:text-[14px] font-semibold tracking-tight text-base-content/80">
                   Dark mode
@@ -146,7 +163,7 @@ function SideBar() {
               <Tag
                 size={17}
                 strokeWidth={1.8}
-                className="text-base-content/40 sm:w-[18px] sm:h-[18px]"
+                className="text-base-content/40 sm:w-4.5 sm:h-4.5"
               />
               <span className="text-[13px] sm:text-[14px] font-semibold tracking-tight text-base-content/80">
                 Tags / Categories
@@ -160,30 +177,38 @@ function SideBar() {
 
         {/* User Profile */}
         <div className="px-4 sm:px-5 pb-4 sm:pb-5">
-          <div className="bg-base-300/50 border border-base-300 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-indigo-600/20 border border-indigo-600/40 flex items-center justify-center">
-                <span className="text-[11px] sm:text-[12px] font-black uppercase text-indigo-400">
-                  AH
-                </span>
-              </div>
-              <div>
-                <p className="text-[12px] sm:text-[13px] font-semibold tracking-tight text-base-content">
-                  {user?.name || "Loading..."}
-                </p>
-                <p className="text-[10px] sm:text-[11px] text-base-content/40">
-                  {user?.email || "Loading..."}
-                </p>
-              </div>
+          {error ? (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3">
+              <p className="text-[11px] sm:text-[12px] text-red-400 text-center">
+                {error}
+              </p>
             </div>
-            <button className="text-base-content/40 hover:text-indigo-400 transition-colors duration-200 p-1 cursor-pointer">
-              <LogOut
-                size={17}
-                strokeWidth={1.8}
-                className="sm:w-[18px] sm:h-[18px]"
-              />
-            </button>
-          </div>
+          ) : (
+            <div className="bg-base-300/50 border border-base-300 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-indigo-600/20 border border-indigo-600/40 flex items-center justify-center">
+                  <span className="text-[11px] sm:text-[12px] font-black uppercase text-indigo-400">
+                    {loading ? "..." : getUserInitials()}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[12px] sm:text-[13px] font-semibold tracking-tight text-base-content">
+                    {loading ? "Loading..." : user?.name || "User"}
+                  </p>
+                  <p className="text-[10px] sm:text-[11px] text-base-content/40">
+                    {loading ? "Loading..." : user?.email || "No email"}
+                  </p>
+                </div>
+              </div>
+              <button className="text-base-content/40 hover:text-indigo-400 transition-colors duration-200 p-1 cursor-pointer">
+                <LogOut
+                  size={17}
+                  strokeWidth={1.8}
+                  className="sm:w-4.5 sm:h-4.5"
+                />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
