@@ -48,7 +48,7 @@ const Task = {
     },
 
     getTaskById: async (id) => {
-        const [task] = await db.query("SELECT * FROM task WHERE id = ?",
+        const [task] = await db.query("SELECT * FROM task WHERE user_id = ?",
             [id]
         );
         return task[0];

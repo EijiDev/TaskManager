@@ -15,7 +15,8 @@ function TaskList() {
     title: "",
     description: "",
     priority: "Medium",
-    category: "Work",
+    status: "pending",
+    due_date: "",
   });
 
   const filtered = tasks.filter((t) =>
@@ -23,15 +24,15 @@ function TaskList() {
   );
 
   useEffect(() => {
-    fetchTask();
-  }, []);
+    displayTask();
+  });
 
-  fetchTask = async () => {
+  const displayTask = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("accessToken");
       if (!token) {
-        throw new Error("No Access Token Found");
+        throw new Error("No access token found");
       }
 
       const response = await axios.get("/api/tasks", {
@@ -43,45 +44,15 @@ function TaskList() {
       setTasks(response.data);
       setError("");
     } catch (error) {
-      if (error.response?.status === 401) {
+      if (data.response?.status === 401) {
         localStorage.removeItem("accessToken");
-        setError("Session expired. Please log in again.");
-      } else {
-        setError(error.response?.data?.message || "Failed to fetch tasks");
+        setError("");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const addTasks = async () => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("No Access Token Found");
-      }
-
-      const newTask = {
-        title: "",
-        description: "",
-        priority: "Medium",
-        category: "Work",
-        date: new Date().toISOString(),
-        completed: false,
-      };
-
-      const response = await axios.post("/api/tasks", newTask, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setTasks((prec) => [...prev, response.data]);
-    } catch (error) {
-      console.error("Failed to add task:", error);
-      alert(error.response?.data?.message || "Failed to add task");
-    }
-  };
   return (
     <div className="h-full flex flex-col bg-base-200">
       {/* ── Top Bar ── */}
