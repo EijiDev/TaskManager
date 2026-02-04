@@ -22,7 +22,7 @@ function AddTaskModal({ showModal, setShowModal, newTask, setNewTask, handleAddT
           {/* Title */}
           <div>
             <label className="block text-[12px] font-semibold text-base-content/80 mb-2">
-              Title
+              Title <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -50,7 +50,7 @@ function AddTaskModal({ showModal, setShowModal, newTask, setNewTask, handleAddT
           {/* Priority */}
           <div>
             <label className="block text-[12px] font-semibold text-base-content/80 mb-2">
-              Priority
+              Priority <span className="text-red-500">*</span>
             </label>
             <select
               value={newTask.priority}
@@ -79,6 +79,19 @@ function AddTaskModal({ showModal, setShowModal, newTask, setNewTask, handleAddT
               <option value="Health">Health</option>
               <option value="Other">Other</option>
             </select>
+          </div>
+
+          {/* Due Date */}
+          <div>
+            <label className="block text-[12px] font-semibold text-base-content/80 mb-2">
+              Due Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={newTask.due_date}
+              onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+              className="w-full px-3 py-2 bg-base-300/50 border border-base-300 rounded-lg text-[13px] text-base-content focus:outline-none focus:border-indigo-500"
+            />
           </div>
         </div>
 

@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TaskCard from "./TaskCard.jsx";
 import AddTaskModal from "./AddTaskModal.jsx";
 import { Search, Plus } from "lucide-react";
-import { useEffect } from "react";
 import axios from "axios";
 
 function TaskList() {
@@ -11,51 +10,145 @@ function TaskList() {
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [newTasks, setNewTasks] = useState({
+  const [userId, setUserId] = useState(null);
+  const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     priority: "Medium",
+    category: "Work",
     status: "pending",
     due_date: "",
   });
 
   const filtered = tasks.filter((t) =>
-    t.title.toLowerCase().includes(search.toLowerCase()),
+    t.title.toLowerCase().includes(search.toLowerCase())
   );
 
   useEffect(() => {
-    displayTask();
-  });
+    getCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (userId) displayTask();
+  }, [userId]);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) throw new Error("No access token found");
+    return { Authorization: `Bearer ${token}` };
+  };
+
+  const getCurrentUser = async () => {
+    try {
+      const { data } = await axios.get("/api/users/me", {
+        headers: getAuthHeaders(),
+      });
+      setUserId(data.id);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem("accessToken");
+        setError("Authentication failed. Please login again.");
+      }
+    }
+  };
 
   const displayTask = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("No access token found");
-      }
-
-      const response = await axios.get("/api/tasks", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const { data } = await axios.get(`/api/tasks?user_id=${userId}`, {
+        headers: getAuthHeaders(),
       });
-
-      setTasks(response.data);
+      setTasks(data);
       setError("");
     } catch (error) {
-      if (data.response?.status === 401) {
+      if (error.response?.status === 401) {
         localStorage.removeItem("accessToken");
-        setError("");
+        setError("Authentication failed. Please login again.");
+      } else {
+        setError(error.response?.data?.message || "Failed to load tasks");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleAddTask = async () => {
+    if (!newTask.title.trim()) return setError("Task title is required");
+    if (!newTask.due_date.trim()) return setError("Due date is required");
+
+    try {
+      const { data } = await axios.post(
+        "/api/tasks",
+        { ...newTask, user_id: userId },
+        { headers: getAuthHeaders() }
+      );
+
+      setTasks([...tasks, data.data]);
+      setNewTask({
+        title: "",
+        description: "",
+        priority: "Medium",
+        category: "Work",
+        status: "pending",
+        due_date: "",
+      });
+      setShowModal(false);
+      setError("");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to add task");
+    }
+  };
+
+  const handleToggleTask = async (taskId) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    try {
+      const updatedStatus = task.status === "completed" ? "pending" : "completed";
+      await axios.put(
+        `/api/tasks/${taskId}`,
+        { ...task, status: updatedStatus },
+        { headers: getAuthHeaders() }
+      );
+
+      setTasks(
+        tasks.map((t) =>
+          t.id === taskId
+            ? { ...t, status: updatedStatus, completed: updatedStatus === "completed" }
+            : t
+        )
+      );
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to update task");
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await axios.delete(`/api/tasks/${taskId}`, { headers: getAuthHeaders() });
+      setTasks(tasks.filter((t) => t.id !== taskId));
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to delete task");
+    }
+  };
+
+  const handleUpdateTask = async (updatedTask) => {
+    try {
+      const { data } = await axios.put(
+        `/api/tasks/${updatedTask.id}`,
+        updatedTask,
+        { headers: getAuthHeaders() }
+      );
+
+      setTasks(tasks.map((t) => (t.id === updatedTask.id ? data.data : t)));
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to update task");
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-base-200">
-      {/* ── Top Bar ── */}
+      {/* Top Bar */}
       <div className="w-full px-4 sm:px-6 md:px-8 py-4 sm:py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-6">
         <div className="flex-1 flex justify-center order-2 sm:order-1">
           <div className="relative w-full max-w-xl">
@@ -86,7 +179,7 @@ function TaskList() {
         </div>
       </div>
 
-      {/* ── Content ── */}
+      {/* Content */}
       <div className="flex-1 w-full px-4 sm:px-6 md:px-8 pb-8 sm:pb-10 md:pb-12 flex flex-col gap-4 sm:gap-5">
         {/* Dashboard Header */}
         <div className="bg-base-300/50 rounded-xl sm:rounded-2xl border border-base-300 shadow-xl sm:shadow-2xl overflow-hidden">
@@ -111,24 +204,46 @@ function TaskList() {
               onClick={() => setShowModal(true)}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 text-white text-[12px] sm:text-[13px] font-bold uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-colors cursor-pointer shadow-lg shadow-indigo-900/40"
             >
-              <Plus size={15} strokeWidth={2.5} className="sm:w-4 sm:h-4" /> Add
-              Task
+              <Plus size={15} strokeWidth={2.5} className="sm:w-4 sm:h-4" /> Add Task
             </button>
           </div>
         </div>
 
-        {/* ── Task Cards ── */}
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-[13px]">
+            {error}
+          </div>
+        )}
+
+        {/* Task Cards */}
         <div className="flex flex-col gap-2.5 sm:gap-3">
-          {filtered.length === 0 ? (
+          {loading ? (
             <div className="bg-base-300/50 rounded-xl sm:rounded-2xl border border-base-300 shadow-sm px-5 sm:px-6 py-10 sm:py-14 text-center">
               <p className="text-[13px] sm:text-[14px] text-base-content/40 font-medium">
-                {search
-                  ? "No tasks match your search."
-                  : "No tasks yet. Add one to get started!"}
+                Loading tasks...
+              </p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="bg-base-300/50 rounded-xl sm:rounded-2xl border border-base-300 shadow-sm px-5 sm:px-6 py-10 sm:py-14 text-center">
+              <p className="text-[13px] sm:text-[14px] text-base-content/40 font-medium">
+                {search ? "No tasks match your search." : "No tasks yet. Add one to get started!"}
               </p>
             </div>
           ) : (
-            filtered.map((task) => <TaskCard key={task._id} task={task} />)
+            filtered.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={{
+                  ...task,
+                  completed: task.status === "completed",
+                  date: task.due_date,
+                }}
+                onToggle={handleToggleTask}
+                onDelete={handleDeleteTask}
+                onUpdate={handleUpdateTask}
+              />
+            ))
           )}
         </div>
       </div>
